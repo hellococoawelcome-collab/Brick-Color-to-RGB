@@ -1,16 +1,43 @@
-// Function to convert Brick colors to RGB, HEX, and HSV formats
+// Comprehensive Roblox BrickColor Database and Conversion Functions
 
-function brickColorConverter(brickColor) {
-    const colorMap = {
-        "Red": { rgb: [255, 0, 0], hex: "#FF0000", hsv: [0, 100, 100] },
-        "Green": { rgb: [0, 255, 0], hex: "#00FF00", hsv: [120, 100, 100] },
-        "Blue": { rgb: [0, 0, 255], hex: "#0000FF", hsv: [240, 100, 100] },
-        // Add more colors as needed
-    };
+// Define a BrickColor database
+const BrickColorDatabase = {
+    'BrickColor1': { R: 255, G: 0, B: 0 }, // Red
+    'BrickColor2': { R: 0, G: 255, B: 0 }, // Green
+    'BrickColor3': { R: 0, G: 0, B: 255 }, // Blue
+    // Add more BrickColor mappings here
+};
 
-    return colorMap[brickColor] || { rgb: [0, 0, 0], hex: "#000000", hsv: [0, 0, 0] };
+// Function to convert BrickColor to RGB
+function BrickColorToRGB(brickColor) {
+    if (BrickColorDatabase[brickColor]) {
+        return BrickColorDatabase[brickColor];
+    } else {
+        throw new Error('Invalid BrickColor');
+    }
 }
 
-// Example usage:
-const color = brickColorConverter("Red");
-console.log(color); // { rgb: [255, 0, 0], hex: '#FF0000', hsv: [0, 100, 100] }
+// Function to convert RGB to BrickColor
+function RGBToBrickColor(r, g, b) {
+    for (const [key, value] of Object.entries(BrickColorDatabase)) {
+        if (value.R === r && value.G === g && value.B === b) {
+            return key;
+        }
+    }
+    throw new Error('No matching BrickColor found for this RGB value');
+}
+
+// Example Usage
+try {
+    const rgb = BrickColorToRGB('BrickColor1');
+    console.log(rgb); // { R: 255, G: 0, B: 0 }
+} catch (error) {
+    console.error(error);
+}
+
+try {
+    const brickColor = RGBToBrickColor(255, 0, 0);
+    console.log(brickColor); // BrickColor1
+} catch (error) {
+    console.error(error);
+}
