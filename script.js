@@ -1,16 +1,1 @@
-// Roblox BrickColor Database
-const BrickColors = {
-    'White': [242, 243, 243],
-    'Grey': [161, 165, 162],
-    'Bright red': [196, 40, 28],
-    'Bright blue': [13, 105, 172],
-    // Add all other colors here up to ID 1032
-    // ...
-};
-
-// Function to get RGB values by BrickColor name
-function getRGB(colorName) {
-    return BrickColors[colorName] || null;
-}
-
-export { getRGB };
+const BrickColors = {\n  "Bright red": { RGB: [255, 0, 0], HEX: "#FF0000", HSV: [0, 100, 100] },\n  "Bright blue": { RGB: [0, 0, 255], HEX: "#0000FF", HSV: [240, 100, 100] },\n  // Include all 130+ colors here\n};\n\nfunction convertColor(colorName) {\n  const color = BrickColors[colorName];\n  if (color) {\n    return color; // Return RGB, HEX, HSV values\n  } else {\n    return null; // Color not found\n  }\n}\n\nfunction clearInput() {\n  document.getElementById('color-input').value = '';\n}\n\n// Add functionality for autocomplete suggestions here\n\n// Example usage: console.log(convertColor('Bright red'));\n
