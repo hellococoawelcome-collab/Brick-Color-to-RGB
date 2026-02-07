@@ -40,9 +40,16 @@ function copy(text){
 }
 
 // ---------- 表示 ----------
+function findBrickColor(input){
+  const key = Object.keys(brickData).find(
+    k => k.toLowerCase() === input.toLowerCase()
+  );
+  return key ? brickData[key] : null;
+}
+
 function show(){
   const name = nameInput.value.trim();
-  const c = brickData[name];
+  const c = findBrickColor(name);
   resultDiv.innerHTML = "";
 
   if (!c) {
@@ -53,25 +60,21 @@ function show(){
   preview.style.background = `rgb(${c.r},${c.g},${c.b})`;
 
   let text = "";
-
   if (modeSel.value === "rgb") {
     text = `rgb(${c.r}, ${c.g}, ${c.b})`;
-  }
-  else if (modeSel.value === "hex") {
-    text = rgbToHex(c.r,c.g,c.b);
-  }
-  else if (modeSel.value === "hsv") {
-    const hsv = rgbToHsv(c.r,c.g,c.b);
+  } else if (modeSel.value === "hex") {
+    text = rgbToHex(c.r, c.g, c.b);
+  } else {
+    const hsv = rgbToHsv(c.r, c.g, c.b);
     text = `hsv(${hsv.h}, ${hsv.s}%, ${hsv.v}%)`;
   }
 
-  const div = document.createElement("div");
-  div.className = "out";
-  div.innerHTML = `<code>${text}</code>
-                   <button>Copy</button>`;
-  div.querySelector("button").onclick = () => copy(text);
-
-  resultDiv.appendChild(div);
+  resultDiv.innerHTML = `
+    <div class="out">
+      <code>${text}</code>
+      <button onclick="navigator.clipboard.writeText('${text}')">Copy</button>
+    </div>
+  `;
 }
 
 // ---------- データ読み込み ----------
@@ -93,4 +96,6 @@ async function loadBrickColors(){
 loadBrickColors().then(() => {
   nameInput.addEventListener("input", show);
   modeSel.addEventListener("change", show);
+  show(); // ← これ重要
 });
+
