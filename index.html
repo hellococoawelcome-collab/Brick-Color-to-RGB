@@ -1,65 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrickColor Converter</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        #suggestions { border: 1px solid #ccc; display: none; position: absolute; background: #fff; z-index: 1000; }
-        #suggestions div { padding: 8px; cursor: pointer; }
-        #suggestions div:hover { background: #eee; }
-    </style>
-</head>
-<body>
-    <h1>BrickColor to RGB Converter</h1>
-    <input type="text" id="brickColorInput" placeholder="Enter BrickColor name" autocomplete="off" />
-    <div id="suggestions"></div>
-    <button id="convertButton">Convert</button>
-    <p id="result"></p>
+<select id="brick"></select>
+<p>
+R:<span id="r"></span>
+G:<span id="g"></span>
+B:<span id="b"></span>
+</p>
+<div id="preview" style="width:100px;height:100px;border:1px solid #000"></div>
 
-    <script>
-        const brickColors = ['Bright red', 'Bright blue', 'Bright green', 'Bright yellow', 'Shiny gold', 'Shiny silver']; // Add more BrickColor names as needed
+<script src="script.js"></script>
+<script>
+let brickData;
 
-        const input = document.getElementById('brickColorInput');
-        const suggestions = document.getElementById('suggestions');
-        const result = document.getElementById('result');
-        const convertButton = document.getElementById('convertButton');
+loadBrickColors().then(data => {
+    brickData = data;
 
-        input.addEventListener('input', () => {
-            const value = input.value;
-            suggestions.innerHTML = '';
-            if (value) {
-                const filtered = brickColors.filter(color => color.toLowerCase().includes(value.toLowerCase()));
-                filtered.forEach(color => {
-                    const div = document.createElement('div');
-                    div.textContent = color;
-                    div.onclick = () => {
-                        input.value = color;
-                        suggestions.innerHTML = '';
-                        suggestions.style.display = 'none';
-                    };
-                    suggestions.appendChild(div);
-                });
-                if (filtered.length > 0) suggestions.style.display = 'block';
-                else suggestions.style.display = 'none';
-            } else {
-                suggestions.style.display = 'none';
-            }
-        });
+    const sel = document.getElementById("brick");
+    for (const name in data) {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+    }
 
-        convertButton.addEventListener('click', () => {
-            const colorName = input.value;
-            const colorMap = {
-                'Bright red': '255, 0, 0',
-                'Bright blue': '0, 0, 255',
-                'Bright green': '0, 255, 0',
-                'Bright yellow': '255, 255, 0',
-                'Shiny gold': '255, 215, 0',
-                'Shiny silver': '192, 192, 192'
-            };
-            result.textContent = colorMap[colorName] ? `RGB: ${colorMap[colorName]}` : 'Invalid BrickColor name';
-        });
-    </script>
-</body>
-</html>
+    sel.addEventListener("change", () => show(sel.value));
+    show(sel.value);
+});
+
+function show(name) {
+    const c = brickData[name];
+    r.textContent = c.r;
+    g.textContent = c.g;
+    b.textContent = c.b;
+    preview.style.background = `rgb(${c.r},${c.g},${c.b})`;
+}
+</script>
