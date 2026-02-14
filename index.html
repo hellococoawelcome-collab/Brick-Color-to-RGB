@@ -81,8 +81,7 @@ input,select{
 <select id="mode">
   <option value="rgb">RGB</option>
   <option value="rgb01">RGB (0-1)</option>
-  <option value="hsv">HSV</option>
-  <option value="hsb">HSB</option>
+  <option value="hsv">HSV / HSB</option>
   <option value="hex">HEX</option>
 </select>
 
@@ -183,10 +182,13 @@ function show(){
       (c.b/255).toFixed(3)
     ]);
   }
-  else if(modeSel.value==="hsv"||modeSel.value==="hsb"){
-    const hsv=rgbToHsv(c.r,c.g,c.b);
-    createGrid(["H","S","V"],[hsv.h,hsv.s,hsv.v]);
-  }
+ else if(modeSel.value==="hsv"){
+  const hsv = rgbToHsv(c.r,c.g,c.b);
+  　　createGrid(
+ 　 ["H","S","V(B)"],
+  　[hsv.h, hsv.s, hsv.v]
+　);
+}
   else if(modeSel.value==="hex"){
     const div=document.createElement("div");
     div.className="out";
