@@ -15,36 +15,72 @@ function show(){
 
   preview.style.background = `rgb(${c.r},${c.g},${c.b})`;
 
-  let text = "";
+  // 汎用分離表示関数
+  function createGrid(labels, values, colors){
+    const wrapper = document.createElement("div");
+    wrapper.className = "rgb-grid";
+
+    labels.forEach((label, i) => {
+      const box = document.createElement("div");
+      box.className = "rgb-box";
+
+      const l = document.createElement("span");
+      l.className = "rgb-label";
+      l.textContent = label;
+
+      const num = document.createElement("span");
+      num.className = "rgb-value";
+      num.textContent = values[i];
+
+      if(colors) num.style.color = colors[i];
+
+      box.appendChild(l);
+      box.appendChild(num);
+      wrapper.appendChild(box);
+    });
+
+    resultDiv.appendChild(wrapper);
+  }
 
   if (modeSel.value === "rgb") {
-    text = `${c.r}, ${c.g}, ${c.b}`;
+    createGrid(
+      ["R","G","B"],
+      [c.r, c.g, c.b],
+      ["#ff4d4d","#4dff88","#4da6ff"]
+    );
   }
-  else if (modeSel.value === "hex") {
-    text = rgbToHex(c.r,c.g,c.b);
-  }
-  else if (modeSel.value === "hsv") {
-    const hsv = rgbToHsv(c.r,c.g,c.b);
-    text = `${hsv.h}, ${hsv.s}, ${hsv.v}`;
-  }
+
   else if (modeSel.value === "rgb01") {
-    const r = (c.r/255).toFixed(3);
-    const g = (c.g/255).toFixed(3);
-    const b = (c.b/255).toFixed(3);
-    text = `${r}, ${g}, ${b}`;
+    createGrid(
+      ["R","G","B"],
+      [
+        (c.r/255).toFixed(3),
+        (c.g/255).toFixed(3),
+        (c.b/255).toFixed(3)
+      ],
+      ["#ff4d4d","#4dff88","#4da6ff"]
+    );
   }
 
-  const div = document.createElement("div");
-  div.className = "out";
+  else if (modeSel.value === "hsv" || modeSel.value === "hsb") {
+    const hsv = rgbToHsv(c.r,c.g,c.b);
+    createGrid(
+      ["H","S","V"],
+      [hsv.h, hsv.s, hsv.v],
+      ["#ffaa00","#00ffaa","#00aaff"]
+    );
+  }
 
-  const code = document.createElement("code");
-  code.textContent = text;
+  else if (modeSel.value === "hex") {
+    const text = rgbToHex(c.r,c.g,c.b);
 
-  const btn = document.createElement("button");
-  btn.textContent = "Copy";
-  btn.onclick = () => navigator.clipboard.writeText(text);
+    const div = document.createElement("div");
+    div.className = "out";
 
-  div.appendChild(code);
-  div.appendChild(btn);
-  resultDiv.appendChild(div);
+    const code = document.createElement("code");
+    code.textContent = text;
+
+    div.appendChild(code);
+    resultDiv.appendChild(div);
+  }
 }
