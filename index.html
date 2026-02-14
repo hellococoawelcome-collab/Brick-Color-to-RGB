@@ -2,13 +2,192 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Test</title>
-<link rel="stylesheet" href="style.css">
+<title>BrickColor Converter</title>
+<style>
+body{
+  margin:0;
+  font-family:"Segoe UI",sans-serif;
+  background:#1f1f35;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  padding:50px 20px;
+}
+.container{
+  width:420px;
+  background:#24243a;
+  padding:30px;
+  border-radius:18px;
+}
+h2{text-align:center;margin-bottom:25px;}
+input,select{
+  width:100%;
+  padding:12px;
+  margin-bottom:18px;
+  border-radius:8px;
+  border:none;
+  background:#2f2f4d;
+  color:white;
+}
+#preview{
+  width:100%;
+  height:120px;
+  border-radius:10px;
+  margin-top:20px;
+  border:2px solid rgba(255,255,255,0.1);
+}
+.rgb-grid{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+.rgb-box{
+  flex:1;
+  background:#1b1b2e;
+  padding:15px;
+  border-radius:10px;
+  text-align:center;
+}
+.rgb-label{
+  font-size:13px;
+  opacity:0.6;
+  display:block;
+}
+.rgb-value{
+  font-family:Consolas,monospace;
+  font-size:24px;
+  font-weight:bold;
+}
+.out{
+  background:#1b1b2e;
+  padding:15px;
+  border-radius:10px;
+  margin-top:15px;
+  text-align:center;
+  font-family:Consolas,monospace;
+  font-size:18px;
+}
+</style>
 </head>
 <body>
 
-<h1>Test</h1>
+<div class="container">
+<h2>BrickColor Converter</h2>
 
-<script src="script.js"></script>
+<label>BrickColor Name:</label>
+<input id="nameInput" placeholder="Bright red">
+
+<label>変換形式:</label>
+<select id="mode">
+  <option value="rgb">RGB</option>
+  <option value="rgb01">RGB (0-1)</option>
+  <option value="hsv">HSV</option>
+  <option value="hsb">HSB</option>
+  <option value="hex">HEX</option>
+</select>
+
+<div id="result"></div>
+<div id="preview"></div>
+</div>
+
+<script>
+const nameInput=document.getElementById("nameInput");
+const modeSel=document.getElementById("mode");
+const resultDiv=document.getElementById("result");
+const preview=document.getElementById("preview");
+
+let brickData={};
+let loaded=false;
+
+// 相対パス（username変わっても壊れない）
+fetch("BrickColor.txt")
+.then(res=>res.text())
+.then(text=>{
+  text.split(/\\r?\\n/).forEach(line=>{
+    if(!line.trim())return;
+    const parts=line.split("\\t");
+    if(parts.length<3)return;
+    const name=parts[0].trim();
+    const rgb=parts[2].trim();
+    const [r,g,b]=rgb.split(",").map(v=>Number(v.trim()));
+    brickData[name.toLowerCase()]={r,g,b};
+  });
+  loaded=true;
+  console.log("Loaded:",Object.keys(brickData).length);
+});
+
+function rgbToHex(r,g,b){
+  return "#"+[r,g,b].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+
+function rgbToHsv(r,g,b){
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b);
+  const min=Math.min(r,g,b);
+  const d=max-min;
+  let h=0;
+  if(d!==0){
+    if(max===r)h=((g-b)/d)%6;
+    else if(max===g)h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h=Math.round(h*60);
+    if(h<0)h+=360;
+  }
+  const s=max===0?0:Math.round(d/max*100);
+  const v=Math.round(max*100);
+  return{h,s,v};
+}
+
+function createGrid(labels,values){
+  const wrap=document.createElement("div");
+  wrap.className="rgb-grid";
+  labels.forEach((l,i)=>{
+    const box=document.createElement("div");
+    box.className="rgb-box";
+    box.innerHTML=
+      "<span class='rgb-label'>"+l+"</span>"+
+      "<span class='rgb-value'>"+values[i]+"</span>";
+    wrap.appendChild(box);
+  });
+  resultDiv.appendChild(wrap);
+}
+
+function show(){
+  if(!loaded)return;
+  const input=nameInput.value.trim().toLowerCase();
+  resultDiv.innerHTML="";
+  preview.style.backgroundColor="transparent";
+  if(!input)return;
+  const c=brickData[input];
+  if(!c)return;
+
+  preview.style.backgroundColor=`rgb(${c.r},${c.g},${c.b})`;
+
+  if(modeSel.value==="rgb"){
+    createGrid(["R","G","B"],[c.r,c.g,c.b]);
+  }
+  else if(modeSel.value==="rgb01"){
+    createGrid(["R","G","B"],[
+      (c.r/255).toFixed(3),
+      (c.g/255).toFixed(3),
+      (c.b/255).toFixed(3)
+    ]);
+  }
+  else if(modeSel.value==="hsv"||modeSel.value==="hsb"){
+    const hsv=rgbToHsv(c.r,c.g,c.b);
+    createGrid(["H","S","V"],[hsv.h,hsv.s,hsv.v]);
+  }
+  else if(modeSel.value==="hex"){
+    const div=document.createElement("div");
+    div.className="out";
+    div.textContent=rgbToHex(c.r,c.g,c.b);
+    resultDiv.appendChild(div);
+  }
+}
+
+nameInput.addEventListener("input",show);
+modeSel.addEventListener("change",show);
+</script>
+
 </body>
 </html>
