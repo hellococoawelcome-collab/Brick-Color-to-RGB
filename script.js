@@ -1,86 +1,111 @@
+const nameInput = document.getElementById("nameInput");
+const modeSel = document.getElementById("mode");
+const resultDiv = document.getElementById("result");
+const preview = document.getElementById("preview");
+
+let brickData = {};
+
+// データ読み込み
+fetch("BrickColor.txt")
+  .then(res => res.text())
+  .then(text => {
+    text.split(/\r?\n/).forEach(line => {
+      if (!line.trim()) return;
+      const [name, id, rgb255] = line.split("\t");
+      if (!rgb255) return;
+      const [r,g,b] = rgb255.split(",").map(v => Number(v.trim()));
+      brickData[name.toLowerCase()] = { r,g,b };
+    });
+  });
+
+function findBrick(name){
+  return brickData[name.toLowerCase()];
+}
+
+function rgbToHex(r,g,b){
+  return "#" + [r,g,b].map(x =>
+    x.toString(16).padStart(2,"0")
+  ).join("");
+}
+
+function rgbToHsv(r,g,b){
+  r/=255; g/=255; b/=255;
+  const max = Math.max(r,g,b);
+  const min = Math.min(r,g,b);
+  const d = max - min;
+  let h=0;
+
+  if(d!==0){
+    if(max===r) h=((g-b)/d)%6;
+    else if(max===g) h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h=Math.round(h*60);
+    if(h<0) h+=360;
+  }
+
+  const s = max===0?0:Math.round(d/max*100);
+  const v = Math.round(max*100);
+
+  return {h,s,v};
+}
+
+function createGrid(labels, values){
+  const wrapper = document.createElement("div");
+  wrapper.className = "rgb-grid";
+
+  labels.forEach((label,i)=>{
+    const box = document.createElement("div");
+    box.className = "rgb-box";
+
+    const l = document.createElement("span");
+    l.className = "rgb-label";
+    l.textContent = label;
+
+    const num = document.createElement("span");
+    num.className = "rgb-value";
+    num.textContent = values[i];
+
+    box.appendChild(l);
+    box.appendChild(num);
+    wrapper.appendChild(box);
+  });
+
+  resultDiv.appendChild(wrapper);
+}
+
 function show(){
   const input = nameInput.value.trim();
   resultDiv.innerHTML = "";
+  preview.style.backgroundColor = "transparent";
 
-  if (!input) {
-    preview.style.background = "transparent";
-    return;
-  }
+  if(!input) return;
 
   const c = findBrick(input);
-  if (!c) {
-    preview.style.background = "transparent";
-    return;
+  if(!c) return;
+
+  preview.style.backgroundColor = `rgb(${c.r},${c.g},${c.b})`;
+
+  if(modeSel.value==="rgb"){
+    createGrid(["R","G","B"],[c.r,c.g,c.b]);
   }
-
-  preview.style.background = `rgb(${c.r},${c.g},${c.b})`;
-
-  // 汎用分離表示関数
-  function createGrid(labels, values, colors){
-    const wrapper = document.createElement("div");
-    wrapper.className = "rgb-grid";
-
-    labels.forEach((label, i) => {
-      const box = document.createElement("div");
-      box.className = "rgb-box";
-
-      const l = document.createElement("span");
-      l.className = "rgb-label";
-      l.textContent = label;
-
-      const num = document.createElement("span");
-      num.className = "rgb-value";
-      num.textContent = values[i];
-
-      if(colors) num.style.color = colors[i];
-
-      box.appendChild(l);
-      box.appendChild(num);
-      wrapper.appendChild(box);
-    });
-
-    resultDiv.appendChild(wrapper);
+  else if(modeSel.value==="rgb01"){
+    createGrid(["R","G","B"],[
+      (c.r/255).toFixed(3),
+      (c.g/255).toFixed(3),
+      (c.b/255).toFixed(3)
+    ]);
   }
-
-  if (modeSel.value === "rgb") {
-    createGrid(
-      ["R","G","B"],
-      [c.r, c.g, c.b],
-      ["#ff4d4d","#4dff88","#4da6ff"]
-    );
-  }
-
-  else if (modeSel.value === "rgb01") {
-    createGrid(
-      ["R","G","B"],
-      [
-        (c.r/255).toFixed(3),
-        (c.g/255).toFixed(3),
-        (c.b/255).toFixed(3)
-      ],
-      ["#ff4d4d","#4dff88","#4da6ff"]
-    );
-  }
-
-  else if (modeSel.value === "hsv" || modeSel.value === "hsb") {
+  else if(modeSel.value==="hsv" || modeSel.value==="hsb"){
     const hsv = rgbToHsv(c.r,c.g,c.b);
-    createGrid(
-      ["H","S","V"],
-      [hsv.h, hsv.s, hsv.v],
-      ["#ffaa00","#00ffaa","#00aaff"]
-    );
+    createGrid(["H","S","V"],[hsv.h,hsv.s,hsv.v]);
   }
-
-  else if (modeSel.value === "hex") {
-    const text = rgbToHex(c.r,c.g,c.b);
-
+  else if(modeSel.value==="hex"){
     const div = document.createElement("div");
-    div.className = "out";
-
-    const code = document.createElement("code");
-    code.textContent = text;
-
-    div.appendChild(code);
+    div.className="out";
+    div.textContent = rgbToHex(c.r,c.g,c.b);
     resultDiv.appendChild(div);
   }
 }
+
+nameInput.addEventListener("input", show);
+modeSel.addEventListener("change", show);
