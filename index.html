@@ -197,7 +197,7 @@ loadData().then(colors=>{
     else if(modeSel.value==="hsv"){
       const hsv=rgbToHsv(c.r,c.g,c.b);
       copyText=`${hsv.h}, ${hsv.s}, ${hsv.v}`;
-      html=createGrid(["H","S","V"],[hsv.h,hsv.s,hsv.v]);
+      html=createGrid(["H","S","V/B"],[hsv.h,hsv.s,hsv.v]);
     }
 
     html+=`<button id="copyBtn">Copy</button>`;
